@@ -122,20 +122,8 @@ class RootViewController: UIViewController {
     }
 
     private func makeHeroView() -> UIView {
-        let container = UIView()
+        let container = HeroView()
         container.isUserInteractionEnabled = false
-        container.layer.cornerRadius = 28
-        container.layer.masksToBounds = true
-
-        let gradient = CAGradientLayer()
-        gradient.colors = [
-            UIColor(red: 0.12, green: 0.18, blue: 0.34, alpha: 1).cgColor,
-            UIColor(red: 0.23, green: 0.46, blue: 0.95, alpha: 1).cgColor,
-            UIColor(red: 0.48, green: 0.71, blue: 0.99, alpha: 1).cgColor,
-        ]
-        gradient.startPoint = CGPoint(x: 0, y: 0)
-        gradient.endPoint = CGPoint(x: 1, y: 1)
-        container.layer.insertSublayer(gradient, at: 0)
 
         let titleLabel = UILabel()
         titleLabel.text = "一个 Demo，覆盖 UIKit 与 SwiftUI 两条接入路径"
@@ -172,9 +160,6 @@ class RootViewController: UIViewController {
             stack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -24),
             container.heightAnchor.constraint(equalToConstant: 278),
         ])
-
-        container.layoutIfNeeded()
-        gradient.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 40, height: 278)
 
         return container
     }
@@ -437,6 +422,39 @@ extension RootViewController {
         @objc
         private func handleTap() {
             onTap?()
+        }
+    }
+
+    final class HeroView: UIView {
+        private let gradientLayer = CAGradientLayer()
+
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+
+            layer.cornerRadius = 28
+            layer.masksToBounds = true
+
+            gradientLayer.colors = [
+                UIColor(red: 0.12, green: 0.18, blue: 0.34, alpha: 1).cgColor,
+                UIColor(red: 0.23, green: 0.46, blue: 0.95, alpha: 1).cgColor,
+                UIColor(red: 0.48, green: 0.71, blue: 0.99, alpha: 1).cgColor,
+            ]
+            gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+            gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+            layer.insertSublayer(gradientLayer, at: 0)
+        }
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            gradientLayer.frame = bounds
+            CATransaction.commit()
         }
     }
 }

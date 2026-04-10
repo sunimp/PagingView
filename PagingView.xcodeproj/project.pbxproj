@@ -53,7 +53,6 @@
 		A47637772C5B2F2B0073E2FD /* SegmentWappedRepresentableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentWappedRepresentableView.swift; sourceTree = "<group>"; };
 		A47637792C5B30C00073E2FD /* SegmentWappedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentWappedView.swift; sourceTree = "<group>"; };
 		A48128AC2C57C5A50077451E /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
-		A4C09FC42C5CA3BE0090C808 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
 		A4C09FC62C5CA3BE0090C808 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A4C09FC82C5CA3BF0090C808 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A4C09FCB2C5CA3BF0090C808 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -202,7 +201,6 @@
 		A4C09FC32C5CA3BE0090C808 /* SwiftUIExample */ = {
 			isa = PBXGroup;
 			children = (
-				A4C09FC42C5CA3BE0090C808 /* ExampleApp.swift */,
 				A4C09FC62C5CA3BE0090C808 /* RootView.swift */,
 				A4C09FD82C5CA4DD0090C808 /* PagerViewExample.swift */,
 				A4C09FDE2C5CA5110090C808 /* SegmentViewExample1.swift */,

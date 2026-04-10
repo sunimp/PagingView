@@ -14,6 +14,7 @@ class PagingUIKitController: UIViewController {
 
     private lazy var chromeView = HeaderChromeView()
     private lazy var headerView = HeaderView(channel: self.channel)
+    private lazy var segmentedContainerView = SegmentedContainerView(contentView: self.segmentedView)
 
     private var chromeHeightConstraint: NSLayoutConstraint?
     private var pinItem: UIBarButtonItem?
@@ -49,7 +50,7 @@ class PagingUIKitController: UIViewController {
         pagingView.translatesAutoresizingMaskIntoConstraints = false
 
         dataSource.titles = lists.map(\.title)
-        dataSource.titleNormalColor = UIColor.black.withAlphaComponent(0.46)
+        dataSource.titleNormalColor = UIColor.white.withAlphaComponent(0.52)
         dataSource.titleSelectedColor = .white
         dataSource.titleNormalFont = .systemFont(ofSize: 14, weight: .semibold)
         dataSource.titleSelectedFont = .systemFont(ofSize: 14, weight: .bold)
@@ -57,13 +58,11 @@ class PagingUIKitController: UIViewController {
         dataSource.itemWidthIncrement = 14
 
         segmentedView.backgroundColor = UIColor(red: 0.15, green: 0.18, blue: 0.27, alpha: 0.98)
-        segmentedView.layer.cornerRadius = 18
-        segmentedView.clipsToBounds = true
         segmentedView.delegate = self
         segmentedView.dataSource = dataSource
 
         let indicator = SegmentedIndicatorLineView()
-        indicator.indicatorColor = .white
+        indicator.indicatorColor = UIColor(red: 0.55, green: 0.68, blue: 0.27, alpha: 0.98)
         indicator.indicatorHeight = 3
         indicator.indicatorWidthIncrement = 24
         segmentedView.indicators = [indicator]
@@ -142,7 +141,7 @@ extension PagingUIKitController: PagingViewDataSource {
     }
 
     func segmentedView(in _: PagingView) -> UIView {
-        segmentedView
+        segmentedContainerView
     }
 
     func numberOfLists(in _: PagingView) -> Int {
@@ -275,6 +274,9 @@ extension PagingUIKitController {
             ])
             textStack.axis = .vertical
             textStack.spacing = 16
+            textStack.setContentCompressionResistancePriority(.required, for: .horizontal)
+            artworkView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            artworkView.setContentHuggingPriority(.defaultLow, for: .horizontal)
 
             let headerRow = UIStackView(arrangedSubviews: [textStack, artworkView])
             headerRow.axis = .horizontal
@@ -295,8 +297,8 @@ extension PagingUIKitController {
             addSubview(contentStack)
 
             NSLayoutConstraint.activate([
-                artworkView.widthAnchor.constraint(equalToConstant: 116),
-                artworkView.heightAnchor.constraint(equalToConstant: 116),
+                artworkView.widthAnchor.constraint(equalToConstant: 92),
+                artworkView.heightAnchor.constraint(equalToConstant: 108),
 
                 contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
                 contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
@@ -395,6 +397,28 @@ extension PagingUIKitController {
         }
     }
 
+    final class SegmentedContainerView: UIView {
+        init(contentView: UIView) {
+            super.init(frame: .zero)
+
+            backgroundColor = UIColor(red: 0.15, green: 0.18, blue: 0.27, alpha: 0.98)
+            addSubview(contentView)
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+
+            NSLayoutConstraint.activate([
+                contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                contentView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                contentView.topAnchor.constraint(equalTo: topAnchor),
+                contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            ])
+        }
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+
     final class ArtworkView: UIView {
         override init(frame: CGRect) {
             super.init(frame: frame)
@@ -451,7 +475,6 @@ final class ShowcasePageController: UIViewController,
         let view = UICollectionView(frame: .zero, collectionViewLayout: self.layout)
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .clear
-        view.contentInset = UIEdgeInsets(top: 12, left: 16, bottom: 24, right: 16)
         view.contentInsetAdjustmentBehavior = .never
         view.delegate = self
         view.dataSource = self
@@ -554,6 +577,14 @@ final class ShowcasePageController: UIViewController,
     func collectionView(
         _: UICollectionView,
         layout _: UICollectionViewLayout,
+        insetForSectionAt _: Int
+    ) -> UIEdgeInsets {
+        UIEdgeInsets(top: 12, left: 16, bottom: 24, right: 16)
+    }
+
+    func collectionView(
+        _: UICollectionView,
+        layout _: UICollectionViewLayout,
         minimumLineSpacingForSectionAt _: Int
     ) -> CGFloat {
         listType == .nearby ? 12 : 16
@@ -591,12 +622,14 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
     private let cardView = UIView()
     private let artworkView = UIView()
     private let artworkGradient = CAGradientLayer()
+    private let contentStackView = UIStackView()
     private let badgeStackView = UIStackView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let noteLabel = UILabel()
     private let metricStackView = UIStackView()
     private var artworkHeightConstraint: NSLayoutConstraint?
+    private var metricHeightConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -638,34 +671,40 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
         titleLabel.font = .systemFont(ofSize: 21, weight: .bold)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 0
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         subtitleLabel.font = .systemFont(ofSize: 13, weight: .medium)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 0
+        subtitleLabel.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
 
         noteLabel.font = .systemFont(ofSize: 13, weight: .semibold)
         noteLabel.textColor = .label
         noteLabel.numberOfLines = 0
+        noteLabel.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
 
         metricStackView.axis = .horizontal
         metricStackView.spacing = 8
         metricStackView.distribution = .fillEqually
+        metricStackView.setContentCompressionResistancePriority(.required, for: .vertical)
 
-        let stack = UIStackView(arrangedSubviews: [
+        contentStackView.axis = .vertical
+        contentStackView.spacing = 10
+        contentStackView.translatesAutoresizingMaskIntoConstraints = false
+        [
             artworkView,
             badgeStackView,
             titleLabel,
             subtitleLabel,
             noteLabel,
             metricStackView,
-        ])
-        stack.axis = .vertical
-        stack.spacing = 10
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        cardView.addSubview(stack)
+        ].forEach(contentStackView.addArrangedSubview)
+        cardView.addSubview(contentStackView)
 
         artworkHeightConstraint = artworkView.heightAnchor.constraint(equalToConstant: 120)
         artworkHeightConstraint?.isActive = true
+        metricHeightConstraint = metricStackView.heightAnchor.constraint(greaterThanOrEqualToConstant: 52)
+        metricHeightConstraint?.isActive = true
 
         NSLayoutConstraint.activate([
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -673,10 +712,10 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
-            stack.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            stack.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
-            stack.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -16),
+            contentStackView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            contentStackView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
+            contentStackView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+            contentStackView.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -16),
         ])
     }
 
@@ -693,15 +732,63 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
         item.badges.prefix(3).map { self.makeBadge(text: $0, tone: item.tone) }.forEach(badgeStackView.addArrangedSubview)
 
         metricStackView.removeAllArrangedSubviews()
-        item.metrics.prefix(listType == .nearby ? 2 : 3).map { self.makeMetricView(metric: $0, tone: item.tone) }.forEach(metricStackView.addArrangedSubview)
+        let metricCount = (listType == .nearby || listType == .all) ? 2 : 3
+        item.metrics.prefix(metricCount).map { self.makeMetricView(metric: $0, tone: item.tone) }.forEach(metricStackView.addArrangedSubview)
+
+        applyLayout(item: item, listType: listType, mode: mode)
+    }
+
+    private func applyLayout(item: ShowcaseItem, listType: ListType, mode: ShowcasePageMode) {
+        badgeStackView.isHidden = false
+        subtitleLabel.isHidden = false
+        noteLabel.isHidden = false
+        titleLabel.numberOfLines = 2
+        subtitleLabel.numberOfLines = 2
+        noteLabel.numberOfLines = 2
+        contentStackView.spacing = 10
+        metricHeightConstraint?.constant = 52
 
         switch listType {
         case .recent:
-            artworkHeightConstraint?.constant = item.style == .hero ? 170 : 112
+            switch item.style {
+            case .hero:
+                artworkHeightConstraint?.constant = 170
+            case .editorial:
+                artworkHeightConstraint?.constant = 112
+            case .compact:
+                artworkHeightConstraint?.constant = 94
+                badgeStackView.isHidden = true
+                subtitleLabel.isHidden = true
+                noteLabel.isHidden = true
+                titleLabel.numberOfLines = 1
+                contentStackView.spacing = 8
+                metricHeightConstraint?.constant = 48
+            case .stat:
+                artworkHeightConstraint?.constant = 82
+                noteLabel.isHidden = true
+                titleLabel.numberOfLines = 1
+                subtitleLabel.numberOfLines = 1
+                contentStackView.spacing = 8
+                metricHeightConstraint?.constant = 48
+            case .mosaic:
+                artworkHeightConstraint?.constant = 100
+                noteLabel.isHidden = true
+                contentStackView.spacing = 8
+            }
         case .nearby:
             artworkHeightConstraint?.constant = 92
+            badgeStackView.isHidden = true
+            noteLabel.isHidden = true
+            contentStackView.spacing = 8
+            metricHeightConstraint?.constant = 46
         case .all:
-            artworkHeightConstraint?.constant = mode == .paging ? 84 : 92
+            artworkHeightConstraint?.constant = mode == .paging ? 72 : 80
+            badgeStackView.isHidden = true
+            subtitleLabel.isHidden = true
+            noteLabel.isHidden = true
+            titleLabel.numberOfLines = 1
+            contentStackView.spacing = 8
+            metricHeightConstraint?.constant = 46
         }
     }
 
@@ -712,7 +799,7 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
         label.textColor = tone.color
         label.contentInsets = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
         label.backgroundColor = tone.softColor
-        label.layer.cornerRadius = 12
+        label.layer.cornerRadius = 6
         label.layer.masksToBounds = true
         return label
     }
@@ -722,11 +809,13 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
         valueLabel.text = metric.value
         valueLabel.font = .systemFont(ofSize: 15, weight: .bold)
         valueLabel.textColor = .label
+        valueLabel.numberOfLines = 1
 
         let titleLabel = UILabel()
         titleLabel.text = metric.label
         titleLabel.font = .systemFont(ofSize: 10, weight: .semibold)
         titleLabel.textColor = .secondaryLabel
+        titleLabel.numberOfLines = 1
 
         let stack = UIStackView(arrangedSubviews: [valueLabel, titleLabel])
         stack.axis = .vertical
@@ -734,8 +823,9 @@ private final class ShowcaseCollectionCell: UICollectionViewCell {
 
         let container = UIView()
         container.backgroundColor = tone.softColor
-        container.layer.cornerRadius = 14
+        container.layer.cornerRadius = 8
         container.addSubview(stack)
+        container.heightAnchor.constraint(greaterThanOrEqualToConstant: 46).isActive = true
         stack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),

@@ -362,13 +362,11 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
             }
             let header = listHeader(for: scrollView)
             if headerContainerView.superview != header {
-                headerContainerView.frame.origin.y = 0
-                header?.addSubview(headerContainerView)
+                moveHeaderContainerView(to: header, y: 0)
             }
         } else {
             if headerContainerView.superview != self {
-                headerContainerView.frame.origin.y = -(headerHeight - segmentedOffsetY)
-                addSubview(headerContainerView)
+                moveHeaderContainerView(to: self, y: -(headerHeight - segmentedOffsetY))
             }
             if isSyncListContentOffsetEnabled {
                 isSyncListContentOffsetEnabled = false
@@ -423,6 +421,19 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
         }
     }
 
+    private func moveHeaderContainerView(to view: UIView?, y: CGFloat) {
+        guard let view else {
+            return
+        }
+        headerContainerView.frame = CGRect(
+            x: 0,
+            y: y,
+            width: bounds.width,
+            height: headerContainerHeight
+        )
+        view.addSubview(headerContainerView)
+    }
+
     private func reloadForBoundsChange() {
         reloadHeaderHeights()
         reloadHeaderContainerView()
@@ -440,13 +451,21 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
         if let headerView = headerView {
             let heightForHeader = dataSource?.heightForHeaderView(in: self)
             if heightForHeader == PagingView.automaticDimension {
-                headerView.setNeedsLayout()
-                headerView.layoutIfNeeded()
                 let targetSize = CGSize(
                     width: bounds.width,
                     height: UIView.layoutFittingCompressedSize.height
                 )
-                headerHeight = headerView.systemLayoutSizeFitting(targetSize).height
+                let previousBounds = headerView.bounds
+                if previousBounds.width != bounds.width {
+                    headerView.bounds = CGRect(origin: .zero, size: CGSize(width: bounds.width, height: previousBounds.height))
+                }
+                headerView.setNeedsLayout()
+                headerView.layoutIfNeeded()
+                headerHeight = headerView.systemLayoutSizeFitting(
+                    targetSize,
+                    withHorizontalFittingPriority: .required,
+                    verticalFittingPriority: .fittingSizeLevel
+                ).height
             } else {
                 headerHeight = heightForHeader ?? 0
             }
@@ -491,8 +510,7 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
             list.listScrollView().scrollsToTop = (list.listScrollView() == listScrollView)
         }
         if listScrollView.contentOffset.y <= -(segmentedHeight + segmentedOffsetY) {
-            headerContainerView.frame.origin.y = 0
-            listHeader.addSubview(headerContainerView)
+            moveHeaderContainerView(to: listHeader, y: 0)
         }
         let minContentSizeHeight = bounds.height - segmentedHeight - segmentedOffsetY
         if minContentSizeHeight > listScrollView.contentSize.height,
@@ -719,8 +737,7 @@ extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
         } else {
             // When scrolling left and right, add headerContainerView to self to achieve the floating effect
             if headerContainerView.superview != self {
-                headerContainerView.frame.origin.y = currentHeaderContainerViewY
-                addSubview(headerContainerView)
+                moveHeaderContainerView(to: self, y: currentHeaderContainerViewY)
             }
         }
 
