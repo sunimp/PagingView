@@ -12,7 +12,7 @@
 - UIKit 核心能力：`PagingView` + `SegmentedView`
 - SwiftUI 封装：`PagerView`、`CombinedSegmentView`、`SegmentView`
 - 支持 Header 吸顶、分页切换、指示器动画、列表懒加载
-- 同仓库包含 UIKit 与 SwiftUI 示例工程
+- 同仓库包含一个统一 Demo App，内部区分 UIKit 与 SwiftUI 两套示例
 - 以 Swift Package 形式分发，便于集成
 
 ## 环境要求
@@ -112,21 +112,23 @@ struct DemoView: View {
 - [SwiftUIExample](/Users/sun/projects/github/PagingView/SwiftUIExample)
 - [UIKitExample](/Users/sun/projects/github/PagingView/UIKitExample)
 
+当前两个目录的示例页面已合并到同一个 Demo target 中运行，启动后可在 App 内分别进入 `UIKit` 与 `SwiftUI` 分区。
+
 ## 项目结构
 
 ```text
 PagingView/
 ├── PagingView/          # 核心库代码
 ├── PagingViewTests/     # 测试目标（待继续完善）
-├── SwiftUIExample/      # SwiftUI 示例
-└── UIKitExample/        # UIKit 示例
+├── SwiftUIExample/      # SwiftUI 示例页面源码
+└── UIKitExample/        # Demo App 与 UIKit 示例页面源码
 ```
 
 ## 本地验证
 
 ```bash
-xcodebuild build -project PagingView.xcodeproj -scheme PagingView -destination 'generic/platform=iOS Simulator'
-xcodebuild build -project PagingView.xcodeproj -scheme SwiftUIExample -destination 'generic/platform=iOS Simulator'
+xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'generic/platform=iOS Simulator'
+xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 xcodebuild build -project PagingView.xcodeproj -scheme UIKitExample -destination 'generic/platform=iOS Simulator'
 ```
 

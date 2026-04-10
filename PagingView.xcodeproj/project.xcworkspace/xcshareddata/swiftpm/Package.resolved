@@ -1,13 +1,22 @@
 {
-  "originHash" : "abf02d22a60dc88a3b196eca993b50fc58c00a9b9794a9d8ea9402d8a084d201",
+  "originHash" : "07b7a1d0a863e90abc520413e5202e324f695afd9ca14b17f3cf464a38143689",
   "pins" : [
     {
-      "identity" : "lookinserver",
+      "identity" : "lookinside",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/QMUI/LookinServer.git",
+      "location" : "https://github.com/Lakr233/LookInside",
       "state" : {
-        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
-        "version" : "1.2.8"
+        "revision" : "7f5b367524f449df49ce8ebcfb2a3e303950083b",
+        "version" : "2.2.5"
+      }
+    },
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "state" : {
+        "revision" : "626b5b7b2f45e1b0b1c6f4a309296d1d21d7311b",
+        "version" : "1.7.1"
       }
     }
   ],

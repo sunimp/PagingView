@@ -20,8 +20,8 @@
 提交前建议至少完成以下构建：
 
 ```bash
-xcodebuild build -project PagingView.xcodeproj -scheme PagingView -destination 'generic/platform=iOS Simulator'
-xcodebuild build -project PagingView.xcodeproj -scheme SwiftUIExample -destination 'generic/platform=iOS Simulator'
+xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'generic/platform=iOS Simulator'
+xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 xcodebuild build -project PagingView.xcodeproj -scheme UIKitExample -destination 'generic/platform=iOS Simulator'
 ```
 

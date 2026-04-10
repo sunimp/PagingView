@@ -9,47 +9,45 @@ import UIKit
 
 /// A protocol representing a list embedded in a `PagingView` view.
 public protocol PagingViewListProtocol: AnyObject {
-    
     /// Returns listView. If it is wrapped by `UIViewController`, it's view, if it is wrapped by a custom view, it is the custom view itself.
     func listView() -> UIView
-    
+
     /// Returns the UIScrollView or its subclasses held by `PagingViewListProtocol`.
     func listScrollView() -> UIScrollView
-    
+
     /// Life Cycle Method: Called when the listView will be appear.
     func listViewWillAppear(_ index: Int)
-    
+
     /// Life Cycle Method: Called when the listView has been appeared.
     func listViewDidAppear(_ index: Int)
-    
+
     /// Life Cycle Method: Called when the listView will be disappear.
     func listViewWillDisappear(_ index: Int)
-    
+
     /// Life Cycle Method: Called when the listView has been disappeared.
     func listViewDidDisappear(_ index: Int)
 }
 
 /// An implementation of the `PagingViewDataSource` protocol used to provide header and list.
 public protocol PagingViewDataSource: AnyObject {
-    
     /// Returns the height of the header view, default is automaticDimension.
     func heightForHeaderView(in pagingView: PagingView) -> CGFloat
-    
+
     /// Returns the height of the header view.
     func headerView(in pagingView: PagingView) -> UIView
-    
+
     /// Returns the height of the header view.
     func heightForSegmentedView(in pagingView: PagingView) -> CGFloat
-    
+
     /// Returns the additional vertical offset of the segmented view.
     func offsetYForSegmentedView(in pagingView: PagingView) -> CGFloat
-    
+
     /// Return to pinned view.
     func segmentedView(in pagingView: PagingView) -> UIView
-    
+
     /// Returns the number of lists.
     func numberOfLists(in pagingView: PagingView) -> Int
-    
+
     /// Initialize a corresponding list instance according to the index.
     ///
     /// The object must conform the `PagingViewListProtocol` protocol.
@@ -61,14 +59,13 @@ public protocol PagingViewDataSource: AnyObject {
 }
 
 public protocol PagingViewDelegate: AnyObject {
-    
     /// Tells the delegate when the user scrolls the `PagingView`.
     ///
     /// - Parameters:
     ///    - pagingView: The PagingView.
     ///    - horizontalScrollView: The internal collectionView with horizontal scrolling.
     func pagingViewDidScroll(_ pagingView: PagingView, horizontalScrollView: PagingCollectionView)
-    
+
     /// Tells the delegate when the user scrolls current list scrollView.
     ///
     /// - Parameters:
@@ -80,17 +77,16 @@ public protocol PagingViewDelegate: AnyObject {
 
 /// Horizontally sliding CollectionView in `PagingView`.
 public class PagingCollectionView: UICollectionView, UIGestureRecognizerDelegate {
-    
     /// A containerView of header view in `PagingView`.
     public var headerContainerView: UIView?
-    
+
     /// Called when the list container starts scrolling
     public var willBeginDraggingHandler: (() -> Void)?
-    
+
     /// UIGestureRecognizerDelegate
-    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        let point = touch.location(in: self.headerContainerView)
-        if self.headerContainerView?.bounds.contains(point) == true {
+    public func gestureRecognizer(_: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        let point = touch.location(in: headerContainerView)
+        if headerContainerView?.bounds.contains(point) == true {
             return false
         }
         return true
@@ -100,10 +96,9 @@ public class PagingCollectionView: UICollectionView, UIGestureRecognizerDelegate
 /// A view that contains a header and a horizontally pager list.
 /// The list can scroll vertically, and the header can be pinned the top.
 public class PagingView: UIView, UIGestureRecognizerDelegate {
-    
     /// A constant representing the default value for a given dimension.
     public static let automaticDimension: CGFloat = -1
-    
+
     /// The internal collectionView with horizontal scrolling.
     public private(set) var listCollectionView: PagingCollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -112,60 +107,60 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
         layout.scrollDirection = .horizontal
         return PagingCollectionView(frame: .zero, collectionViewLayout: layout)
     }()
-    
+
     /// The list dictionary that has been loaded.
     /// The key is the index and the value is the corresponding list.
     public private(set) var listDict: [Int: PagingViewListProtocol] = [:]
-    
+
     /// The header dictionary that has been loaded.
     /// The key is the index and the value is the corresponding header.
     public private(set) var listHeaderDict: [Int: UIView] = [:]
-    
+
     /// A proxy protocol used to provide paging view events.
     public weak var dataSource: PagingViewDataSource?
-    
-    // A proxy protocol used to provide header and list.
+
+    /// A proxy protocol used to provide header and list.
     public weak var delegate: PagingViewDelegate?
-    
+
     /// Current list scrollView.
     public private(set) var currentListScrollView: UIScrollView?
-    
+
     /// Default selected index.
     public var defaultSelectedIndex: Int = 0 {
         didSet {
-            self.currentIndex = self.defaultSelectedIndex
+            currentIndex = defaultSelectedIndex
         }
     }
-    
+
     /// Whether to automatically fill the contentSize of scrollView
     ///
     /// If true, when the contentSize of scrollView is insufficient, the contentSize of scrollView will be modified so that it can scroll to the pinned state.
     ///
     /// Othewise, when the contentSize is not enough to scroll to the pinned state, the header and segmented will automatically scroll down.
     public var isFillContentSizeAutomatically: Bool = true
-    
+
     /// Current selected index.
     public private(set) var currentIndex: Int = 0
-    
+
     /// The height of the header container
     public private(set) var headerContainerHeight: CGFloat = 0
-    
+
     /// The vertical offset of the segmented view when it pinned.
     public var pinnedOffsetY: CGFloat {
-        self.headerContainerHeight - self.segmentedHeight - self.segmentedOffsetY
+        headerContainerHeight - segmentedHeight - segmentedOffsetY
     }
-    
-    // Saving KVO Information.
+
+    /// Saving KVO Information.
     private var scrollViewObservations: [NSKeyValueObservation] = []
-    // Header container
+    /// Header container
     private lazy var headerContainerView = UIView()
     /// Header view
     public private(set) var headerView: UIView?
     /// Segmented view
     public private(set) var segmentedView: UIView?
-    // Flag whether to enable sync list content offset
+    /// Flag whether to enable sync list content offset
     private var isSyncListContentOffsetEnabled: Bool = false
-    // Current paging header view min y
+    /// Current paging header view min y
     private var currentHeaderContainerViewY: CGFloat = 0
     /// Header view height
     public private(set) var headerHeight: CGFloat = 0
@@ -173,396 +168,420 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
     public private(set) var segmentedHeight: CGFloat = 0
     /// The additional vertical offset of the segmented view.
     public private(set) var segmentedOffsetY: CGFloat = 0
-    // Current list initialize contentOffset.y
+    /// Current list initialize contentOffset.y
     private var currentListInitailzeContentOffsetY: CGFloat = 0
-    // Flag whether the list loaded
+    /// Flag whether the list loaded
     private var isListLoaded: Bool = false
-    // Whether it is in horizontal scrolling
+    /// Whether it is in horizontal scrolling
     private var isHorizontalScrolling: Bool = false
-    // Flag the index of the list will appear
+    /// Flag the index of the list will appear
     private var willAppearIndex: Int = -1
-    // Flag the index of the list will disappear
+    /// Flag the index of the list will disappear
     private var willDisappearIndex: Int = -1
-    // Whether it is in changing horizontal contentOffset
+    /// Whether it is in changing horizontal contentOffset
     private var isChangingHorizontalOffset: Bool = false
-    
+
     /// Initializer
     public init(dataSource: PagingViewDataSource? = nil) {
         self.dataSource = dataSource
-        
+
         super.init(frame: .zero)
-        
-        self.setup()
+
+        setup()
     }
-    
+
     @available(*, unavailable)
-    required public init?(coder aDecoder: NSCoder) {
+    public required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override public func layoutSubviews() {
         super.layoutSubviews()
-        
+
         let bounds = self.bounds
-        if self.listCollectionView.frame != bounds {
-            self.listCollectionView.frame = bounds
-            self.reloadData()
+        guard !bounds.isEmpty else {
+            return
         }
-        self.reloadListView(bounds)
+        if listCollectionView.frame != bounds {
+            listCollectionView.frame = bounds
+            if isListLoaded {
+                reloadForBoundsChange()
+            } else {
+                reloadData()
+            }
+        }
+        reloadListView(bounds)
     }
-    
+
     /// Reload paging view.
     public func reloadData() {
-        self.currentListScrollView = nil
-        self.currentHeaderContainerViewY = 0
-        self.isSyncListContentOffsetEnabled = false
-        self.isListLoaded = true
-        
-        self.listHeaderDict.values.forEach { $0.removeFromSuperview() }
-        self.listHeaderDict.removeAll()
-        self.listDict.values.forEach { list in
+        currentListScrollView = nil
+        currentHeaderContainerViewY = 0
+        isSyncListContentOffsetEnabled = false
+        isListLoaded = true
+
+        listHeaderDict.values.forEach { $0.removeFromSuperview() }
+        listHeaderDict.removeAll()
+        for list in listDict.values {
             list.listView().removeFromSuperview()
         }
-        self.listDict.removeAll()
-        self.scrollViewObservations.forEach { observation in
+        listDict.removeAll()
+        for observation in scrollViewObservations {
             observation.invalidate()
         }
-        self.scrollViewObservations.removeAll()
-        self.reloadHeaderView()
-        self.listCollectionView.setContentOffsetIfNeeded(
-            CGPoint(x: self.bounds.width * CGFloat(self.currentIndex), y: 0)
+        scrollViewObservations.removeAll()
+        reloadHeaderView()
+        listCollectionView.setContentOffsetIfNeeded(
+            CGPoint(x: bounds.width * CGFloat(currentIndex), y: 0)
         )
-        self.listCollectionView.reloadData()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+        listCollectionView.reloadData()
+        DispatchQueue.main.async {
             self.listWillAppear(at: self.currentIndex)
             self.listDidAppear(at: self.currentIndex)
         }
     }
-    
+
     /// Reload headerView, called when headerView height changes.
     public func reloadHeaderView() {
-        self.headerView?.removeFromSuperview()
-        self.segmentedView?.removeFromSuperview()
-        self.headerView = self.dataSource?.headerView(in: self)
-        self.segmentedView = self.dataSource?.segmentedView(in: self)
-        if let headerView = self.headerView {
-            self.headerContainerView.addSubview(headerView)
+        headerView?.removeFromSuperview()
+        segmentedView?.removeFromSuperview()
+        headerView = dataSource?.headerView(in: self)
+        segmentedView = dataSource?.segmentedView(in: self)
+        if let headerView = headerView {
+            headerContainerView.addSubview(headerView)
         }
-        if let segmentedView = self.segmentedView {
-            self.headerContainerView.addSubview(segmentedView)
+        if let segmentedView = segmentedView {
+            headerContainerView.addSubview(segmentedView)
         }
-        self.reloadHeaderHeights()
-        self.reloadHeaderContainerView()
+        reloadHeaderHeights()
+        reloadHeaderContainerView()
     }
-    
+
     /// Reload segmentedView, called when segmentedView height changes.
     public func reloadSegmentedView() {
-        self.segmentedView = self.dataSource?.segmentedView(in: self)
-        if let segmentedView = self.segmentedView {
-            self.headerContainerView.addSubview(segmentedView)
+        segmentedView = dataSource?.segmentedView(in: self)
+        if let segmentedView = segmentedView {
+            headerContainerView.addSubview(segmentedView)
         }
-        self.reloadHeaderHeights()
-        self.reloadHeaderContainerView()
+        reloadHeaderHeights()
+        reloadHeaderContainerView()
     }
-    
+
     /// Scroll to idle
     public func scrollToIdle(_ animated: Bool = true) {
-        self.currentListScrollView?.setContentOffset(
-            CGPoint(x: 0, y: -self.headerContainerHeight),
+        currentListScrollView?.setContentOffset(
+            CGPoint(x: 0, y: -headerContainerHeight),
             animated: animated
         )
     }
-    
+
     /// Scroll to pinned position
     public func scrollToPinned(_ animated: Bool = true) {
-        self.currentListScrollView?.setContentOffset(
-            CGPoint(x: 0, y: -(self.segmentedHeight + self.segmentedOffsetY)),
+        currentListScrollView?.setContentOffset(
+            CGPoint(x: 0, y: -(segmentedHeight + segmentedOffsetY)),
             animated: animated
         )
     }
-    
+
     // MARK: - Privates
+
     private func setup() {
-        self.listCollectionView.dataSource = self
-        self.listCollectionView.delegate = self
-        self.listCollectionView.isPagingEnabled = true
-        self.listCollectionView.bounces = false
-        self.listCollectionView.showsHorizontalScrollIndicator = false
-        self.listCollectionView.showsVerticalScrollIndicator = false
-        self.listCollectionView.scrollsToTop = false
-        self.listCollectionView.isPrefetchingEnabled = false
-        self.listCollectionView.contentInsetAdjustmentBehavior = .never
-        self.listCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        self.listCollectionView.headerContainerView = self.headerContainerView
-        self.addSubview(self.listCollectionView)
-        self.addSubview(self.headerContainerView)
+        listCollectionView.dataSource = self
+        listCollectionView.delegate = self
+        listCollectionView.isPagingEnabled = true
+        listCollectionView.bounces = false
+        listCollectionView.showsHorizontalScrollIndicator = false
+        listCollectionView.showsVerticalScrollIndicator = false
+        listCollectionView.scrollsToTop = false
+        listCollectionView.isPrefetchingEnabled = false
+        listCollectionView.contentInsetAdjustmentBehavior = .never
+        listCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        listCollectionView.headerContainerView = headerContainerView
+        addSubview(listCollectionView)
+        addSubview(headerContainerView)
     }
-    
-    private func observeContentOffset(_ scrollView: UIScrollView, newOffset: CGPoint) {
+
+    private func observeContentOffset(_ scrollView: UIScrollView, newOffset _: CGPoint) {
         guard scrollView.window != nil else {
             return
         }
-        self.listDidScroll(scrollView: scrollView)
+        listDidScroll(scrollView: scrollView)
     }
-    
-    private func observeContentSize(_ scrollView: UIScrollView, newSize: CGSize) {
+
+    private func observeContentSize(_ scrollView: UIScrollView, newSize _: CGSize) {
         guard scrollView.window != nil else {
             return
         }
-        let minContentHeight = self.bounds.height - self.segmentedHeight - self.segmentedOffsetY
+        let minContentHeight = bounds.height - segmentedHeight - segmentedOffsetY
         let contentHeight = scrollView.contentSize.height
-        if minContentHeight > contentHeight && self.isFillContentSizeAutomatically {
+        if minContentHeight > contentHeight, isFillContentSizeAutomatically {
             scrollView.contentSize = CGSize(
                 width: scrollView.contentSize.width,
                 height: minContentHeight
             )
             // Reset contentOffset when the new scrollView is first loaded
-            if let listScrollView = self.currentListScrollView {
-                if scrollView != listScrollView && scrollView.contentSize != .zero {
+            if let listScrollView = currentListScrollView {
+                if scrollView != listScrollView, scrollView.contentSize != .zero {
                     scrollView.setContentOffsetIfNeeded(
-                        CGPoint(x: 0, y: self.currentListInitailzeContentOffsetY)
+                        CGPoint(x: 0, y: currentListInitailzeContentOffsetY)
                     )
                 }
             }
         } else {
             if minContentHeight > contentHeight {
                 scrollView.setContentOffsetIfNeeded(
-                    CGPoint(x: scrollView.contentOffset.x, y: -self.headerContainerHeight)
+                    CGPoint(x: scrollView.contentOffset.x, y: -headerContainerHeight)
                 )
-                self.listDidScroll(scrollView: scrollView)
+                listDidScroll(scrollView: scrollView)
             }
         }
     }
-    
+
     private func listDidScroll(scrollView: UIScrollView) {
         if listCollectionView.isDragging || listCollectionView.isDecelerating { return }
-        let index = self.listIndex(for: scrollView)
-        guard index == self.currentIndex else {
+        let index = listIndex(for: scrollView)
+        guard index == currentIndex else {
             return
         }
-        self.currentListScrollView = scrollView
-        let contentOffsetY = scrollView.contentOffset.y + self.headerContainerHeight
-        if contentOffsetY < (self.headerHeight - self.segmentedOffsetY) {
-            self.isSyncListContentOffsetEnabled = true
-            self.currentHeaderContainerViewY = -contentOffsetY
-            self.listDict.values.forEach { list in
+        currentListScrollView = scrollView
+        let contentOffsetY = scrollView.contentOffset.y + headerContainerHeight
+        if contentOffsetY < (headerHeight - segmentedOffsetY) {
+            isSyncListContentOffsetEnabled = true
+            currentHeaderContainerViewY = -contentOffsetY
+            for list in listDict.values {
                 let listScrollView = list.listScrollView()
                 if listScrollView != scrollView {
                     listScrollView.setContentOffsetIfNeeded(scrollView.contentOffset)
                 }
                 if listScrollView.showsVerticalScrollIndicator {
-                    let contentOffsetY = listScrollView.contentOffset.y + self.headerContainerHeight
+                    let contentOffsetY = listScrollView.contentOffset.y + headerContainerHeight
                     var indicatorInsets = listScrollView.verticalScrollIndicatorInsets
                     indicatorInsets.top = listScrollView.contentInset.top - contentOffsetY
                     listScrollView.verticalScrollIndicatorInsets = indicatorInsets
                 }
             }
-            let header = self.listHeader(for: scrollView)
-            if self.headerContainerView.superview != header {
-                self.headerContainerView.frame.origin.y = 0
-                header?.addSubview(self.headerContainerView)
+            let header = listHeader(for: scrollView)
+            if headerContainerView.superview != header {
+                headerContainerView.frame.origin.y = 0
+                header?.addSubview(headerContainerView)
             }
         } else {
-            if self.headerContainerView.superview != self {
-                self.headerContainerView.frame.origin.y = -(self.headerHeight - self.segmentedOffsetY)
-                self.addSubview(self.headerContainerView)
+            if headerContainerView.superview != self {
+                headerContainerView.frame.origin.y = -(headerHeight - segmentedOffsetY)
+                addSubview(headerContainerView)
             }
-            if self.isSyncListContentOffsetEnabled {
-                self.isSyncListContentOffsetEnabled = false
-                self.currentHeaderContainerViewY = -(self.headerHeight - self.segmentedOffsetY)
-                self.listDict.values.forEach { list in
-                    if list.listScrollView() != self.currentListScrollView {
+            if isSyncListContentOffsetEnabled {
+                isSyncListContentOffsetEnabled = false
+                currentHeaderContainerViewY = -(headerHeight - segmentedOffsetY)
+                for list in listDict.values {
+                    if list.listScrollView() != currentListScrollView {
                         list.listScrollView().setContentOffsetIfNeeded(
-                            CGPoint(x: 0, y: -(self.segmentedHeight + self.segmentedOffsetY))
+                            CGPoint(x: 0, y: -(segmentedHeight + segmentedOffsetY))
                         )
                     }
                 }
             }
         }
-        
+
         let contentOffset = CGPoint(x: scrollView.contentOffset.x, y: contentOffsetY)
-        self.delegate?.pagingViewCurrentListViewDidScroll(
+        delegate?.pagingViewCurrentListViewDidScroll(
             self,
             scrollView: scrollView,
             contentOffset: contentOffset
         )
     }
-    
+
     private func reloadHeaderContainerView() {
         let bounds = self.bounds
-        self.headerContainerView.frame = CGRect(
+        headerContainerView.frame = CGRect(
             x: 0,
             y: 0,
             width: bounds.width,
-            height: self.headerContainerHeight
+            height: headerContainerHeight
         )
-        self.headerView?.frame = CGRect(
+        headerView?.frame = CGRect(
             x: 0,
             y: 0,
             width: bounds.width,
-            height: self.headerHeight
+            height: headerHeight
         )
-        self.segmentedView?.frame = CGRect(
+        segmentedView?.frame = CGRect(
             x: 0,
-            y: self.headerHeight,
+            y: headerHeight,
             width: bounds.width,
-            height: self.segmentedHeight
+            height: segmentedHeight
         )
-        
-        self.listDict.values.forEach { list in
+
+        for list in listDict.values {
             let listScrollView = list.listScrollView()
             var insets = listScrollView.contentInset
-            insets.top = self.headerContainerHeight
+            insets.top = headerContainerHeight
             listScrollView.contentInset = insets
             listScrollView.setContentOffsetIfNeeded(
-                CGPoint(x: 0, y: -self.headerContainerHeight)
+                CGPoint(x: 0, y: -headerContainerHeight)
             )
         }
     }
-    
+
+    private func reloadForBoundsChange() {
+        reloadHeaderHeights()
+        reloadHeaderContainerView()
+        listCollectionView.collectionViewLayout.invalidateLayout()
+        listCollectionView.setContentOffsetIfNeeded(
+            CGPoint(x: bounds.width * CGFloat(currentIndex), y: 0)
+        )
+        listCollectionView.reloadData()
+        if let currentListScrollView = currentListScrollView {
+            listDidScroll(scrollView: currentListScrollView)
+        }
+    }
+
     private func reloadHeaderHeights() {
-        if let headerView = self.headerView {
-            let heightForHeader = self.dataSource?.heightForHeaderView(in: self)
+        if let headerView = headerView {
+            let heightForHeader = dataSource?.heightForHeaderView(in: self)
             if heightForHeader == PagingView.automaticDimension {
                 headerView.setNeedsLayout()
                 headerView.layoutIfNeeded()
                 let targetSize = CGSize(
-                    width:  self.bounds.width,
+                    width: bounds.width,
                     height: UIView.layoutFittingCompressedSize.height
                 )
-                self.headerHeight = headerView.systemLayoutSizeFitting(targetSize).height
+                headerHeight = headerView.systemLayoutSizeFitting(targetSize).height
             } else {
-                self.headerHeight = heightForHeader ?? 0
+                headerHeight = heightForHeader ?? 0
             }
         } else {
-            self.headerHeight = 0
+            headerHeight = 0
         }
-        if let segmentedView = self.segmentedView {
-            let heightForSegmented = self.dataSource?.heightForSegmentedView(in: self)
-            self.segmentedHeight = heightForSegmented ?? segmentedView.bounds.height
+        if let segmentedView = segmentedView {
+            let heightForSegmented = dataSource?.heightForSegmentedView(in: self)
+            segmentedHeight = heightForSegmented ?? segmentedView.bounds.height
         } else {
-            self.segmentedHeight = 0
+            segmentedHeight = 0
         }
-        self.headerContainerHeight = self.headerHeight + self.segmentedHeight
-        self.segmentedOffsetY = self.dataSource?.offsetYForSegmentedView(in: self) ?? 0
+        headerContainerHeight = headerHeight + segmentedHeight
+        segmentedOffsetY = dataSource?.offsetYForSegmentedView(in: self) ?? 0
     }
-    
+
     private func reloadListView(_ bounds: CGRect) {
-        self.listDict.values.forEach { list in
+        for list in listDict.values {
             var listFrame = list.listView().frame
             if listFrame.size != bounds.size {
                 listFrame.size = bounds.size
                 list.listView().frame = listFrame
             }
         }
-        self.listHeaderDict.values.forEach { header in
+        for header in listHeaderDict.values {
             var headerFrame = header.frame
-            headerFrame.origin.y = -self.headerContainerHeight
-            headerFrame.size.height = self.headerContainerHeight
+            headerFrame.origin.y = -headerContainerHeight
+            headerFrame.size.height = headerContainerHeight
             header.frame = headerFrame
         }
     }
-    
+
     private func horizontalScrollDidEnd(at index: Int) {
-        self.currentIndex = index
-        guard let listHeader = self.listHeaderDict[index],
-              let listScrollView = self.listDict[index]?.listScrollView() else {
+        currentIndex = index
+        guard let listHeader = listHeaderDict[index],
+              let listScrollView = listDict[index]?.listScrollView()
+        else {
             return
         }
-        self.currentListScrollView = listScrollView
-        self.listDict.values.forEach { list in
+        currentListScrollView = listScrollView
+        for list in listDict.values {
             list.listScrollView().scrollsToTop = (list.listScrollView() == listScrollView)
         }
-        if listScrollView.contentOffset.y <= -(self.segmentedHeight + self.segmentedOffsetY) {
-            self.headerContainerView.frame.origin.y = 0
-            listHeader.addSubview(self.headerContainerView)
+        if listScrollView.contentOffset.y <= -(segmentedHeight + segmentedOffsetY) {
+            headerContainerView.frame.origin.y = 0
+            listHeader.addSubview(headerContainerView)
         }
-        let minContentSizeHeight = self.bounds.height - self.segmentedHeight - self.segmentedOffsetY
-        if minContentSizeHeight > listScrollView.contentSize.height &&
-            !self.isFillContentSizeAutomatically {
+        let minContentSizeHeight = bounds.height - segmentedHeight - segmentedOffsetY
+        if minContentSizeHeight > listScrollView.contentSize.height,
+           !isFillContentSizeAutomatically
+        {
             listScrollView.setContentOffsetIfNeeded(
-                CGPoint(x: listScrollView.contentOffset.x, y: -self.headerContainerHeight)
+                CGPoint(x: listScrollView.contentOffset.x, y: -headerContainerHeight)
             )
-            self.listDidScroll(scrollView: listScrollView)
+            listDidScroll(scrollView: listScrollView)
         }
     }
-    
+
     private func listHeader(for listScrollView: UIScrollView) -> UIView? {
-        for (index, list) in self.listDict {
+        for (index, list) in listDict {
             if list.listScrollView() == listScrollView {
-                return self.listHeaderDict[index]
+                return listHeaderDict[index]
             }
         }
         return nil
     }
-    
+
     private func listIndex(for listScrollView: UIScrollView) -> Int {
-        for (index, list) in self.listDict {
+        for (index, list) in listDict {
             if list.listScrollView() == listScrollView {
                 return index
             }
         }
         return 0
     }
-    
+
     private func listWillAppear(at index: Int) {
-        guard self.isValidIndex(index) else { return }
-        let list = self.listDict[index]
+        guard isValidIndex(index) else { return }
+        let list = listDict[index]
         list?.listViewWillAppear(index)
     }
-      
+
     private func listDidAppear(at index: Int) {
-        guard self.isValidIndex(index) else { return }
-        self.currentIndex = index
-        let list = self.listDict[index]
+        guard isValidIndex(index) else { return }
+        currentIndex = index
+        let list = listDict[index]
         list?.listViewDidAppear(index)
         if let listScrollView = list?.listScrollView(),
-           listScrollView.showsVerticalScrollIndicator {
+           listScrollView.showsVerticalScrollIndicator
+        {
             listScrollView.flashScrollIndicators()
         }
     }
-    
+
     private func listWillDisappear(at index: Int) {
-        guard self.isValidIndex(index) else { return }
-        let list = self.listDict[index]
+        guard isValidIndex(index) else { return }
+        let list = listDict[index]
         list?.listViewWillDisappear(index)
     }
-    
+
     private func listDidDisappear(at index: Int) {
-        guard self.isValidIndex(index) else { return }
-        let list = self.listDict[index]
+        guard isValidIndex(index) else { return }
+        let list = listDict[index]
         list?.listViewDidDisappear(index)
     }
-    
+
     private func isValidIndex(_ index: Int) -> Bool {
-        guard let dataSource = self.dataSource else { return false }
+        guard let dataSource = dataSource else { return false }
         let count = dataSource.numberOfLists(in: self)
         if count <= 0 || index >= count {
             return false
         }
         return true
     }
-    
+
     private func listDidAppearOrDidDisappear(_ scrollView: UIScrollView) {
         let currentIndexPercent = scrollView.contentOffset.x / max(scrollView.bounds.width, 1)
-        if self.willAppearIndex != -1 && self.willDisappearIndex != -1 {
-            let appearIndex = self.willAppearIndex
-            let disappearIndex = self.willDisappearIndex
-            if self.willAppearIndex > self.willDisappearIndex {
+        if willAppearIndex != -1, willDisappearIndex != -1 {
+            let appearIndex = willAppearIndex
+            let disappearIndex = willDisappearIndex
+            if willAppearIndex > willDisappearIndex {
                 // The list that will appear is on the right
-                if currentIndexPercent >= CGFloat(self.willAppearIndex) {
-                    self.willDisappearIndex = -1
-                    self.willAppearIndex = -1
-                    self.listDidDisappear(at: disappearIndex)
-                    self.listDidAppear(at: appearIndex)
+                if currentIndexPercent >= CGFloat(willAppearIndex) {
+                    willDisappearIndex = -1
+                    willAppearIndex = -1
+                    listDidDisappear(at: disappearIndex)
+                    listDidAppear(at: appearIndex)
                 }
             } else {
                 // The list that will appear is on the left
-                if currentIndexPercent <= CGFloat(self.willAppearIndex) {
-                    self.willDisappearIndex = -1
-                    self.willAppearIndex = -1
-                    self.listDidDisappear(at: disappearIndex)
-                    self.listDidAppear(at: appearIndex)
+                if currentIndexPercent <= CGFloat(willAppearIndex) {
+                    willDisappearIndex = -1
+                    willAppearIndex = -1
+                    listDidDisappear(at: disappearIndex)
+                    listDidAppear(at: appearIndex)
                 }
             }
         }
@@ -570,24 +589,23 @@ public class PagingView: UIView, UIGestureRecognizerDelegate {
 }
 
 extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let dataSource = self.dataSource else {
+    public func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
+        guard let dataSource = dataSource else {
             return 0
         }
-        return self.isListLoaded ? dataSource.numberOfLists(in: self) : 0
+        return isListLoaded ? dataSource.numberOfLists(in: self) : 0
     }
-    
+
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let dataSource = self.dataSource else {
+        guard let dataSource = dataSource else {
             return UICollectionViewCell()
         }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        var list = self.listDict[indexPath.item]
+        var list = listDict[indexPath.item]
         if list == nil {
             list = dataSource.pagingView(self, initListAtIndex: indexPath.item)
             if let listVC = list as? UIViewController {
-                var next: UIResponder? = self.superview
+                var next: UIResponder? = superview
                 while next != nil {
                     if let vc = next as? UIViewController {
                         vc.addChild(listVC)
@@ -599,70 +617,70 @@ extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
             guard let list else {
                 return UICollectionViewCell()
             }
-            self.listDict[indexPath.item] = list
+            listDict[indexPath.item] = list
             list.listView().setNeedsLayout()
-            
+
             let listScrollView = list.listScrollView()
             listScrollView.contentInsetAdjustmentBehavior = .never
             listScrollView.automaticallyAdjustsScrollIndicatorInsets = false
-            
-            let minContentHeight = bounds.height - self.segmentedHeight - self.segmentedOffsetY
-            if listScrollView.contentSize.height < minContentHeight && self.isFillContentSizeAutomatically {
-                listScrollView.contentSize = CGSize(width: self.bounds.width, height: minContentHeight)
+
+            let minContentHeight = bounds.height - segmentedHeight - segmentedOffsetY
+            if listScrollView.contentSize.height < minContentHeight && isFillContentSizeAutomatically {
+                listScrollView.contentSize = CGSize(width: bounds.width, height: minContentHeight)
             }
-            
+
             var insets = listScrollView.contentInset
-            insets.top = self.headerContainerHeight
+            insets.top = headerContainerHeight
             listScrollView.contentInset = insets
-            self.currentListInitailzeContentOffsetY = -self.headerContainerHeight + min(-self.currentHeaderContainerViewY, (self.headerHeight - self.segmentedOffsetY))
+            currentListInitailzeContentOffsetY = -headerContainerHeight + min(-currentHeaderContainerViewY, headerHeight - segmentedOffsetY)
             listScrollView.setContentOffsetIfNeeded(
-                CGPoint(x: 0, y: self.currentListInitailzeContentOffsetY)
+                CGPoint(x: 0, y: currentListInitailzeContentOffsetY)
             )
             let listHeader = UIView(
                 frame: CGRect(
                     x: 0,
-                    y: -self.headerContainerHeight,
-                    width: self.bounds.width,
-                    height: self.headerContainerHeight
+                    y: -headerContainerHeight,
+                    width: bounds.width,
+                    height: headerContainerHeight
                 )
             )
             listScrollView.addSubview(listHeader)
-            
-            if self.headerContainerView.superview == nil {
-                listHeader.addSubview(self.headerContainerView)
+
+            if headerContainerView.superview == nil {
+                listHeader.addSubview(headerContainerView)
             }
-            self.listHeaderDict[indexPath.item] = listHeader
+            listHeaderDict[indexPath.item] = listHeader
             let offsetObservation = listScrollView.observe(
                 \.contentOffset,
-                 options: .new,
-                 changeHandler: { [weak self] scrollView, change in
-                     guard let self, let newOffset = change.newValue else { return }
-                     
-                     self.observeContentOffset(scrollView, newOffset: newOffset)
-                 }
+                options: .new,
+                changeHandler: { [weak self] scrollView, change in
+                    guard let self, let newOffset = change.newValue else { return }
+
+                    self.observeContentOffset(scrollView, newOffset: newOffset)
+                }
             )
             let sizeObservation = listScrollView.observe(
                 \.contentSize,
-                 options: .new,
-                 changeHandler: { [weak self] scrollView, change in
-                     guard let self, let newSize = change.newValue else { return }
-                     
-                     self.observeContentSize(scrollView, newSize: newSize)
-                 }
+                options: .new,
+                changeHandler: { [weak self] scrollView, change in
+                    guard let self, let newSize = change.newValue else { return }
+
+                    self.observeContentSize(scrollView, newSize: newSize)
+                }
             )
-            self.scrollViewObservations.append(contentsOf: [
+            scrollViewObservations.append(contentsOf: [
                 offsetObservation,
-                sizeObservation
+                sizeObservation,
             ])
             listScrollView.contentOffset = listScrollView.contentOffset
             if listScrollView.showsVerticalScrollIndicator {
-                let contentOffsetY = listScrollView.contentOffset.y + self.headerContainerHeight
+                let contentOffsetY = listScrollView.contentOffset.y + headerContainerHeight
                 var indicatorInsets = listScrollView.verticalScrollIndicatorInsets
                 indicatorInsets.top = listScrollView.contentInset.top - contentOffsetY
                 listScrollView.verticalScrollIndicatorInsets = indicatorInsets
             }
         }
-        self.listDict.values.forEach { cachedList in
+        for cachedList in listDict.values {
             cachedList.listScrollView().scrollsToTop = (cachedList === list)
         }
         if let listView = list?.listView(), listView.superview != cell.contentView {
@@ -672,36 +690,37 @@ extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
         }
         return cell
     }
-    
+
     public func collectionView(
         _ collectionView: UICollectionView,
-        layout collectionViewLayout: UICollectionViewLayout,
-        sizeForItemAt indexPath: IndexPath
+        layout _: UICollectionViewLayout,
+        sizeForItemAt _: IndexPath
     ) -> CGSize {
         return collectionView.bounds.size
     }
-    
-    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        self.listCollectionView.willBeginDraggingHandler?()
+
+    public func scrollViewWillBeginDragging(_: UIScrollView) {
+        listCollectionView.willBeginDraggingHandler?()
     }
-    
+
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        self.delegate?.pagingViewDidScroll(self, horizontalScrollView: self.listCollectionView)
+        delegate?.pagingViewDidScroll(self, horizontalScrollView: listCollectionView)
         let indexPercent = scrollView.contentOffset.x / max(scrollView.bounds.width, 1)
         let index = Int(scrollView.contentOffset.x / max(scrollView.bounds.width, 1))
-        self.isHorizontalScrolling = true
-        
-        let listScrollView = self.listDict[index]?.listScrollView()
-        if index != self.currentIndex &&
-            (indexPercent - CGFloat(index) == 0) &&
-            !(scrollView.isTracking || scrollView.isDecelerating) &&
-            listScrollView?.contentOffset.y ?? 0 <= -(self.segmentedHeight + self.segmentedOffsetY) {
-            self.horizontalScrollDidEnd(at: index)
+        isHorizontalScrolling = true
+
+        let listScrollView = listDict[index]?.listScrollView()
+        if index != currentIndex,
+           indexPercent - CGFloat(index) == 0,
+           !(scrollView.isTracking || scrollView.isDecelerating),
+           listScrollView?.contentOffset.y ?? 0 <= -(segmentedHeight + segmentedOffsetY)
+        {
+            horizontalScrollDidEnd(at: index)
         } else {
             // When scrolling left and right, add headerContainerView to self to achieve the floating effect
-            if self.headerContainerView.superview != self {
-                self.headerContainerView.frame.origin.y = self.currentHeaderContainerViewY
-                self.addSubview(self.headerContainerView)
+            if headerContainerView.superview != self {
+                headerContainerView.frame.origin.y = currentHeaderContainerViewY
+                addSubview(headerContainerView)
             }
         }
 
@@ -710,74 +729,74 @@ extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
         var leftIndex = Int(floor(Double(percent)))
         leftIndex = max(0, min(maxCount - 1, leftIndex))
         let rightIndex = leftIndex + 1
-        if (percent < 0 || rightIndex >= maxCount) {
-            self.listDidAppearOrDidDisappear(scrollView)
+        if percent < 0 || rightIndex >= maxCount {
+            listDidAppearOrDidDisappear(scrollView)
             return
         }
-        if rightIndex == self.currentIndex {
+        if rightIndex == currentIndex {
             // The currently selected item is on the right, and the user is sliding from right to left
-            if self.listDict[leftIndex] != nil {
-                if self.willAppearIndex == -1 {
-                    self.willAppearIndex = leftIndex
-                    self.listWillAppear(at: self.willAppearIndex)
+            if listDict[leftIndex] != nil {
+                if willAppearIndex == -1 {
+                    willAppearIndex = leftIndex
+                    listWillAppear(at: willAppearIndex)
                 }
             }
-            if self.willDisappearIndex == -1 {
-                self.willDisappearIndex = rightIndex
-                self.listWillDisappear(at: self.willDisappearIndex)
+            if willDisappearIndex == -1 {
+                willDisappearIndex = rightIndex
+                listWillDisappear(at: willDisappearIndex)
             }
         } else {
             // The currently selected item is on the left, and the user is sliding from left to right
-            if self.listDict[rightIndex] != nil {
-                if self.willAppearIndex == -1 {
-                    self.willAppearIndex = rightIndex
-                    self.listWillAppear(at: self.willAppearIndex)
+            if listDict[rightIndex] != nil {
+                if willAppearIndex == -1 {
+                    willAppearIndex = rightIndex
+                    listWillAppear(at: willAppearIndex)
                 }
             }
-            if self.willDisappearIndex == -1 {
-                self.willDisappearIndex = leftIndex
-                self.listWillDisappear(at: leftIndex)
+            if willDisappearIndex == -1 {
+                willDisappearIndex = leftIndex
+                listWillDisappear(at: leftIndex)
             }
         }
-        self.listDidAppearOrDidDisappear(scrollView)
+        listDidAppearOrDidDisappear(scrollView)
     }
-    
+
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             // When scrolling to the middle and then cancel the scrolls.
-            if (self.willDisappearIndex != -1) {
-                self.listWillAppear(at: self.willDisappearIndex)
-                self.listWillDisappear(at: self.willAppearIndex)
-                self.listDidAppear(at: self.willDisappearIndex)
-                self.listDidDisappear(at: self.willAppearIndex)
-                self.willDisappearIndex = -1
-                self.willAppearIndex = -1
+            if willDisappearIndex != -1 {
+                listWillAppear(at: willDisappearIndex)
+                listWillDisappear(at: willAppearIndex)
+                listDidAppear(at: willDisappearIndex)
+                listDidDisappear(at: willAppearIndex)
+                willDisappearIndex = -1
+                willAppearIndex = -1
             }
             let index = Int(scrollView.contentOffset.x / max(scrollView.bounds.width, 1))
-            self.horizontalScrollDidEnd(at: index)
+            horizontalScrollDidEnd(at: index)
         }
     }
-    
+
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         // When scrolling to the middle and then cancel the scrolls.
-        if (self.willDisappearIndex != -1) {
-            self.listDidAppear(at: self.willDisappearIndex)
-            self.listDidDisappear(at: self.willAppearIndex)
-            self.willDisappearIndex = -1
-            self.willAppearIndex = -1
+        if willDisappearIndex != -1 {
+            listDidAppear(at: willDisappearIndex)
+            listDidDisappear(at: willAppearIndex)
+            willDisappearIndex = -1
+            willAppearIndex = -1
         }
         let index = Int(scrollView.contentOffset.x / max(scrollView.bounds.width, 1))
-        self.horizontalScrollDidEnd(at: index)
+        horizontalScrollDidEnd(at: index)
     }
-    
+
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        guard self.isListLoaded else { return }
+        guard isListLoaded else { return }
         let index = Int(scrollView.contentOffset.x / max(scrollView.bounds.width, 1))
-        self.currentIndex = index
-        self.currentListScrollView = self.listDict[index]?.listScrollView()
-        self.isHorizontalScrolling = false
+        currentIndex = index
+        currentListScrollView = listDict[index]?.listScrollView()
+        isHorizontalScrolling = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            if !self.isHorizontalScrolling && self.headerContainerView.superview == self {
+            if !self.isHorizontalScrolling, self.headerContainerView.superview == self {
                 self.horizontalScrollDidEnd(at: index)
             }
         }
@@ -785,51 +804,47 @@ extension PagingView: UICollectionViewDataSource, UICollectionViewDelegateFlowLa
 }
 
 /// Provides a default implementations of `PagingViewListProtocol` so that all delegate methods are optional for classes that conform to `PagingViewListProtocol`.
-extension PagingViewListProtocol {
-    
+public extension PagingViewListProtocol {
     /// Life Cycle Method: Called when the listView will be appear.
-    public func listViewWillAppear(_ index: Int) { }
-    
+    func listViewWillAppear(_: Int) {}
+
     /// Life Cycle Method: Called when the listView has been appeared.
-    public func listViewDidAppear(_ index: Int) { }
-    
+    func listViewDidAppear(_: Int) {}
+
     /// Life Cycle Method: Called when the listView will be disappear.
-    public func listViewWillDisappear(_ index: Int) { }
-    
+    func listViewWillDisappear(_: Int) {}
+
     /// Life Cycle Method: Called when the listView has been disappeared.
-    public func listViewDidDisappear(_ index: Int) { }
+    func listViewDidDisappear(_: Int) {}
 }
 
 /// Provides a default implementations of `PagingViewDataSource` so that all delegate methods are optional for classes that conform to `PagingViewDataSource`.
-extension PagingViewDataSource {
-    
+public extension PagingViewDataSource {
     /// Returns the default height of headerView.
-    public func heightForHeaderView(in pagingView: PagingView) -> CGFloat {
+    func heightForHeaderView(in _: PagingView) -> CGFloat {
         return PagingView.automaticDimension
     }
-    
-    // Returns the default additional vertical offset of the segmented view.
-    public func offsetYForSegmentedView(in pagingView: PagingView) -> CGFloat {
+
+    /// Returns the default additional vertical offset of the segmented view.
+    func offsetYForSegmentedView(in _: PagingView) -> CGFloat {
         return 0
     }
 }
 
 /// Provides a default implementations of `PagingViewDelegate` so that all delegate methods are optional for classes that conform to `PagingViewDelegate`.
-extension PagingViewDelegate {
-    
+public extension PagingViewDelegate {
     /// Tells the delegate when the user scrolls the `PagingView`.
-    public func pagingViewDidScroll(_ pagingView: PagingView, horizontalScrollView: PagingCollectionView) { }
-    
+    func pagingViewDidScroll(_: PagingView, horizontalScrollView _: PagingCollectionView) {}
+
     /// Tells the delegate when the user scrolls current list scrollView.
-    public func pagingViewCurrentListViewDidScroll(_ pagingView: PagingView, scrollView: UIScrollView, contentOffset: CGPoint) { }
+    func pagingViewCurrentListViewDidScroll(_: PagingView, scrollView _: UIScrollView, contentOffset _: CGPoint) {}
 }
 
-extension UIScrollView {
-    
+private extension UIScrollView {
     /// Set contentOffset if needed.
-    fileprivate func setContentOffsetIfNeeded(_ offset: CGPoint) {
-        if self.contentOffset != offset {
-            self.setContentOffset(offset, animated: false)
+    func setContentOffsetIfNeeded(_ offset: CGPoint) {
+        if contentOffset != offset {
+            setContentOffset(offset, animated: false)
         }
     }
 }

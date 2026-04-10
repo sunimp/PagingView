@@ -18,11 +18,11 @@ jobs:
       - name: Show Xcode Version
         run: xcodebuild -version
 
-      - name: Build PagingView
-        run: xcodebuild build -project PagingView.xcodeproj -scheme PagingView -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+      - name: Build Swift Package
+        run: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 
-      - name: Build SwiftUIExample
-        run: xcodebuild build -project PagingView.xcodeproj -scheme SwiftUIExample -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+      - name: Test Swift Package
+        run: xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'platform=iOS Simulator,OS=latest,name=iPhone 16 Pro' CODE_SIGNING_ALLOWED=NO
 
-      - name: Build UIKitExample
+      - name: Build Demo
         run: xcodebuild build -project PagingView.xcodeproj -scheme UIKitExample -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
