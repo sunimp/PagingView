@@ -12,6 +12,7 @@
 - UIKit 核心能力：`PagingView` + `SegmentedView`
 - SwiftUI 封装：`PagerView`、`CombinedSegmentView`、`SegmentView`
 - 支持 Header 吸顶、分页切换、指示器动画、列表懒加载
+- 支持命令式滚动到 Idle / Pinned 状态
 - 同仓库包含一个统一 Demo App，内部区分 UIKit 与 SwiftUI 两套示例
 - 以 Swift Package 形式分发，便于集成
 
@@ -110,9 +111,28 @@ struct DemoView: View {
 更多用法可参考：
 
 - [SwiftUIExample](/Users/sun/projects/github/PagingView/SwiftUIExample)
-- [UIKitExample](/Users/sun/projects/github/PagingView/UIKitExample)
+- [Example](/Users/sun/projects/github/PagingView/Example)
 
-当前两个目录的示例页面已合并到同一个 Demo target 中运行，启动后可在 App 内分别进入 `UIKit` 与 `SwiftUI` 分区。
+当前示例页统一运行在 `Example` target 中，启动后可在 App 内分别进入 `UIKit` 与 `SwiftUI` 分区。
+
+## Demo 说明
+
+Demo App 当前包含以下页面：
+
+- UIKit
+  - `Paging Header Studio`：大头图、吸顶分段、滚动状态与命令式控制
+  - `Detached Segment Lab`：分段与列表容器分离的组合方式
+- SwiftUI
+  - `Editorial Pager`：`PagerView` 头图 + 分段 + 内容流
+  - `Combined Segment Canvas`：组合式分段与内容区域
+  - `Toolbar Segment Deck`：顶部工具栏分段 + 独立内容区
+
+其中 `Paging Header Studio` 额外覆盖了：
+
+- `automaticDimension` Header 高度测量
+- Header 吸顶与列表滚动联动
+- 横向分页切换时的 Header 同步
+- 列表内容卡片与分段吸顶共存的场景
 
 ## 项目结构
 
@@ -120,16 +140,18 @@ struct DemoView: View {
 PagingView/
 ├── PagingView/          # 核心库代码
 ├── PagingViewTests/     # 测试目标（待继续完善）
+├── Example/             # Demo App 与 UIKit 示例页面源码
 ├── SwiftUIExample/      # SwiftUI 示例页面源码
-└── UIKitExample/        # Demo App 与 UIKit 示例页面源码
+└── README.md
 ```
 
 ## 本地验证
 
 ```bash
-xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'generic/platform=iOS Simulator'
-xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme PagingView -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
-xcodebuild build -project PagingView.xcodeproj -scheme UIKitExample -destination 'generic/platform=iOS Simulator'
+swift build
+swift test
+xcodebuild -project PagingView.xcodeproj -scheme PagingView -configuration Debug -destination 'generic/platform=iOS Simulator' build
+xcodebuild -project PagingView.xcodeproj -scheme Example -configuration Debug -destination 'generic/platform=iOS Simulator' build
 ```
 
 ## 路线
