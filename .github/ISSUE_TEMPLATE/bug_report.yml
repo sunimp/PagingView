@@ -1,0 +1,56 @@
+name: Bug Report
+description: 报告一个可复现的问题
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 组件版本
+      description: 如果是分支接入，请填写分支名或提交哈希
+      placeholder: main / commit sha
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 环境信息
+      description: 请填写 iOS 版本、Xcode 版本、设备或模拟器信息
+      placeholder: iOS 18.6, Xcode 16.x, iPhone Simulator
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请尽量提供最小复现路径
+      placeholder: |
+        1. 打开示例
+        2. 滚动到某个位置
+        3. 切换分页
+        4. 出现异常
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息
+      description: 可以附加截图、录屏、日志或相关代码片段
